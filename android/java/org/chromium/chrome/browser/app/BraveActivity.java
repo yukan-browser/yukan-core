@@ -219,7 +219,6 @@ import org.chromium.components.prefs.PrefChangeRegistrar;
 import org.chromium.components.prefs.PrefChangeRegistrar.PrefObserver;
 import org.chromium.components.safe_browsing.BraveSafeBrowsingApiHandler;
 import org.chromium.components.search_engines.TemplateUrl;
-import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -1033,8 +1032,6 @@ public abstract class BraveActivity extends ChromeActivity
 
         boolean isFirstInstall = PackageUtils.isFirstInstall(this);
 
-        String countryCode = Locale.getDefault().getCountry();
-
         BraveVpnNativeWorker.getInstance().reloadPurchasedState();
 
         BraveHelper.maybeMigrateSettings();
@@ -1091,15 +1088,6 @@ public abstract class BraveActivity extends ChromeActivity
             checkForYandexSE();
             enableSearchSuggestions();
             setBraveAsDefaultPrivateMode();
-        }
-
-        if (!isFirstInstall
-                && countryCode.equals(BraveConstants.JAPAN_COUNTRY_CODE)
-                && !ChromeSharedPreferences.getInstance()
-                        .readBoolean(
-                                BravePreferenceKeys.BRAVE_DEFAULT_SEARCH_ENGINE_MIGRATED_JP,
-                                false)) {
-            applyChangesForYahooJp();
         }
 
         BraveSetDefaultBrowserUtils.checkForBraveSetDefaultBrowser(
@@ -1203,6 +1191,7 @@ public abstract class BraveActivity extends ChromeActivity
 
         mNativeInitialized = true;
 
+        String countryCode = Locale.getDefault().getCountry();
         if (countryCode.equals(BraveConstants.INDIA_COUNTRY_CODE)
                 && ChromeSharedPreferences.getInstance()
                         .readBoolean(BravePreferenceKeys.BRAVE_AD_FREE_CALLOUT_DIALOG, true)
@@ -1327,31 +1316,6 @@ public abstract class BraveActivity extends ChromeActivity
         }
 
         ContextUtils.getAppSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-    }
-
-    private void applyChangesForYahooJp() {
-        boolean isDefaultSearchEngineChanged =
-                ChromeSharedPreferences.getInstance()
-                        .readBoolean(BravePreferenceKeys.DEFAULT_SEARCH_ENGINE_CHANGED, false);
-        TemplateUrlService templateUrlService =
-                TemplateUrlServiceFactory.getForProfile(getCurrentProfile());
-        Runnable onTemplateUrlServiceReady =
-                () -> {
-                    if (isActivityFinishingOrDestroyed()) return;
-                    TemplateUrl yahooJpTemplateUrl =
-                            BraveSearchEngineUtils.getTemplateUrlByShortName(
-                                    getCurrentProfile(), OnboardingPrefManager.YAHOO_JP);
-                    if (yahooJpTemplateUrl != null
-                            && !isDefaultSearchEngineChanged
-                            && templateUrlService.isDefaultSearchEngineGoogle()) {
-                        BraveSearchEngineUtils.setDSEPrefs(yahooJpTemplateUrl, getCurrentProfile());
-                        ChromeSharedPreferences.getInstance()
-                                .writeBoolean(
-                                        BravePreferenceKeys.BRAVE_DEFAULT_SEARCH_ENGINE_MIGRATED_JP,
-                                        true);
-                    }
-                };
-        templateUrlService.runWhenLoaded(onTemplateUrlServiceReady);
     }
 
     private void setBraveAsDefaultPrivateMode() {

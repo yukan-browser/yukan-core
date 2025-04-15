@@ -28,7 +28,6 @@ import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.brave_stats.BraveStatsUtil;
 import org.chromium.chrome.browser.notifications.retention.RetentionNotificationUtil;
 import org.chromium.chrome.browser.onboarding.OnboardingPrefManager;
-import org.chromium.chrome.browser.util.BraveConstants;
 
 import java.util.Arrays;
 import java.util.List;
@@ -204,8 +203,7 @@ public class HighlightDialogFragment extends DialogFragment {
 
     private void checkAndOpenNtpPage() {
         String countryCode = Locale.getDefault().getCountry();
-        if (((BraveActivity) getActivity()) != null
-                && countryCode.equals(BraveConstants.JAPAN_COUNTRY_CODE)) {
+        if (((BraveActivity) getActivity()) != null && countryCode.equals("JP")) {
             ((BraveActivity) getActivity()).openNewOrSelectExistingTab(NTP_TUTORIAL_PAGE);
         }
     }
