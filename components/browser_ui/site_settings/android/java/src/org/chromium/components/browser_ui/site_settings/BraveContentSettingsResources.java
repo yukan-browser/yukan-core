@@ -5,12 +5,13 @@
 
 package org.chromium.components.browser_ui.site_settings;
 
-import androidx.annotation.Nullable;
-
 import org.chromium.base.BraveReflectionUtil;
+import org.chromium.build.annotations.NullMarked;
+import org.chromium.build.annotations.Nullable;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 
+@NullMarked
 public class BraveContentSettingsResources extends ContentSettingsResources {
     // Placeholder class
     protected static class ResourceItem {
@@ -21,11 +22,15 @@ public class BraveContentSettingsResources extends ContentSettingsResources {
                 @ContentSettingValues @Nullable Integer defaultDisabledValue,
                 int enabledSummary,
                 int disabledSummary,
-                int summaryOverrideForScreenReader) {
+                int summaryOverrideForScreenReader,
+                int iconBlocked,
+                int enabledPrimaryText,
+                int disabledPrimaryText) {
             assert false;
         }
     }
 
+    @Nullable
     protected static ResourceItem getResourceItem(int contentType) {
         switch (contentType) {
             case ContentSettingsType.AUTOPLAY:
@@ -36,6 +41,9 @@ public class BraveContentSettingsResources extends ContentSettingsResources {
                         ContentSettingValues.BLOCK,
                         R.string.website_settings_category_autoplay_allowed,
                         0,
+                        0,
+                        0,
+                        0,
                         0);
             case ContentSettingsType.BRAVE_GOOGLE_SIGN_IN:
                 return new ResourceItem(
@@ -45,6 +53,9 @@ public class BraveContentSettingsResources extends ContentSettingsResources {
                         ContentSettingValues.BLOCK,
                         R.string.website_settings_category_google_sign_in_ask,
                         R.string.website_settings_category_google_sign_in_block,
+                        0,
+                        0,
+                        0,
                         0);
             case ContentSettingsType.BRAVE_LOCALHOST_ACCESS:
                 return new ResourceItem(
@@ -54,6 +65,9 @@ public class BraveContentSettingsResources extends ContentSettingsResources {
                         ContentSettingValues.BLOCK,
                         R.string.website_settings_category_localhost_ask,
                         R.string.website_settings_category_localhost_block,
+                        0,
+                        0,
+                        0,
                         0);
         }
 

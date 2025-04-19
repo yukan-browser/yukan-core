@@ -28,6 +28,7 @@ export class AutoTabGroupsPageElement extends CrLitElement {
 
   private apiProxy_: BraveTabSearchApiProxy =
       TabSearchApiProxyImpl.getInstance() as BraveTabSearchApiProxy
+  private listenerIds_: number[] = [];
 
   private visibilityChangedListener_: () => void
   private elementVisibilityChangedListener_: IntersectionObserver
@@ -47,11 +48,11 @@ export class AutoTabGroupsPageElement extends CrLitElement {
     }
   }
 
-  availableHeight = 0
-  showBackButton = false
-  isLoadingTopics = false
-  errorMessage = ''
-  needsPremium = false
+  accessor availableHeight: number = 0
+  accessor showBackButton: boolean = false
+  accessor isLoadingTopics: boolean = false
+  accessor errorMessage: string = ''
+  accessor needsPremium: boolean = false
 
   static override get styles() {
     return getCss()
@@ -81,6 +82,10 @@ export class AutoTabGroupsPageElement extends CrLitElement {
     this.apiProxy_.undoFocusTabs().then(() => {
       this.undoTopic_ = ''
     })
+  }
+
+  private setShowFRE_(show: boolean) {
+    this.showFRE_ = show
   }
 
   private getFocusTabs_(topic: string) {
@@ -152,6 +157,13 @@ export class AutoTabGroupsPageElement extends CrLitElement {
   override connectedCallback() {
     super.connectedCallback()
 
+    this.apiProxy_.getTabFocusShowFRE().then(
+        ({showFRE}) => this.setShowFRE_(showFRE))
+
+    const callbackRouter = this.apiProxy_.getCallbackRouter();
+    this.listenerIds_.push(
+        callbackRouter.showFREChanged.addListener(this.setShowFRE_.bind(this)))
+
     document.addEventListener('visibilitychange',
                               this.visibilityChangedListener_)
     this.elementVisibilityChangedListener_.observe(this)
@@ -161,6 +173,8 @@ export class AutoTabGroupsPageElement extends CrLitElement {
 
   override disconnectedCallback() {
     super.disconnectedCallback()
+    this.listenerIds_.forEach(
+        id => this.apiProxy_.getCallbackRouter().removeListener(id))
 
     document.removeEventListener('visibilitychange',
                                  this.visibilityChangedListener_)
@@ -233,7 +247,6 @@ export class AutoTabGroupsPageElement extends CrLitElement {
 
   protected onEnableTabFocusClicked_() {
     this.apiProxy_.setTabFocusEnabled()
-    this.showFRE_ = false
   }
 
   protected onDismissErrorClicked_() {
@@ -242,8 +255,10 @@ export class AutoTabGroupsPageElement extends CrLitElement {
 
   override focus() {
     if (this.showBackButton) {
-      const backButton = this.shadowRoot!.querySelector('cr-icon-button')!
-      backButton.focus()
+      const backButton = this.shadowRoot.querySelector('cr-icon-button')!
+      if (backButton) {
+        backButton.focus()
+      }
     } else {
       super.focus()
     }
